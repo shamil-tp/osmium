@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Compress | Osmisum</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a, #020617);
+            color: white;
+            min-height: 100vh;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(12px);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .drop-zone {
+            border: 2px dashed #38bdf8;
+            padding: 60px;
+            text-align: center;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+            display: block;
+        }
+
+        .drop-zone.dragover {
+            background: rgba(56,189,248,0.1);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .btn {
+            margin-top: 20px;
+            padding: 12px 30px;
+            border-radius: 8px;
+            border: none;
+            background: #38bdf8;
+            color: #0f172a;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            background: #0ea5e9;
+        }
+
+        .stats {
+            margin-top: 30px;
+            display: none;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-box {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-box h3 {
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        .stat-box p {
+            font-size: 20px;
+            margin-top: 8px;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            margin-top: 20px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: #38bdf8;
+            transition: width 0.4s ease;
+        }
+
+        .download-btn {
+            display: none;
+            margin-top: 20px;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Osmisum File Compression</h1>
+
+    <div class="card">
+
+        <form id="uploadForm" action="/compress" method="POST" enctype="multipart/form-data">
+
+            <label class="drop-zone" id="dropZone">
+                <p>Drag & Drop Text File Here</p>
+                <p style="font-size:13px;color:#94a3b8;">Only .txt files allowed</p>
+                <input type="file" name="file" id="fileInput" accept=".txt" required>
+            </label>
+
+            <button type="submit" class="btn">Compress File</button>
+        </form>
+
+        <div class="progress-bar" id="progressBar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="stats" id="stats">
+
+            <div class="stat-box">
+                <h3>Original Size</h3>
+                <p><%= originalSize || "0 MB" %></p>
+            </div>
+
+            <div class="stat-box">
+                <h3>Compressed Size</h3>
+                <p><%= compressedSize || "0 MB" %></p>
+            </div>
+
+            <div class="stat-box">
+                <h3>Size Reduced</h3>
+                <p><%= sizeDifference || "0 MB" %></p>
+            </div>
+
+            <div class="stat-box">
+                <h3>Compression %</h3>
+                <p><%= compressionPercentage || "0%" %></p>
+            </div>
+
+        </div>
+
+        <% if(downloadUrl){ %>
+            <a href="<%= downloadUrl %>" class="btn download-btn" style="display:inline-block;">
+                Download Compressed File
+            </a>
+        <% } %>
+
+    </div>
+</div>
+
+<script>
+    const dropZone = document.getElementById("dropZone");
+    const fileInput = document.getElementById("fileInput");
+    const progressBar = document.getElementById("progressBar");
+    const progressFill = document.getElementById("progressFill");
+    const stats = document.getElementById("stats");
+
+    dropZone.addEventListener("click", () => fileInput.click());
+
+    dropZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropZone.classList.add("dragover");
+    });
+
+    dropZone.addEventListener("dragleave", () => {
+        dropZone.classList.remove("dragover");
+    });
+
+    dropZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropZone.classList.remove("dragover");
+        fileInput.files = e.dataTransfer.files;
+    });
+
+    document.getElementById("uploadForm").addEventListener("submit", () => {
+        progressBar.style.display = "block";
+        progressFill.style.width = "60%";
+
+        setTimeout(() => {
+            progressFill.style.width = "100%";
+            stats.style.display = "grid";
+        }, 1000);
+    });
+</script>
+
+</body>
+</html>

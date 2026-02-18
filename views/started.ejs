@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Get Started | Osmisum</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a, #020617);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .logo span {
+            color: #38bdf8;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(12px);
+            padding: 50px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .card h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            color: #cbd5e1;
+            margin-bottom: 30px;
+        }
+
+        .upload-box {
+            border: 2px dashed #38bdf8;
+            padding: 40px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+            display: block;
+        }
+
+        .upload-box:hover {
+            background: rgba(56,189,248,0.08);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .btn {
+            margin-top: 20px;
+            padding: 12px 30px;
+            border-radius: 8px;
+            border: none;
+            background: #38bdf8;
+            color: #0f172a;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            background: #0ea5e9;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        @media(max-width: 600px){
+            .card {
+                padding: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">OSM<span>IUM</span></div>
+</header>
+
+<div class="container">
+    <div class="card">
+        <h1>Compress Your Files Instantly</h1>
+        <p>Fast. Secure. Efficient file compression powered by Osmisum.</p>
+
+        <form action="/compress" method="POST" enctype="multipart/form-data">
+            
+            <label class="upload-box">
+                <p>Drag & Drop your file here</p>
+                <p style="font-size:13px;color:#94a3b8;">or click to browse</p>
+                <input type="file" name="file" required>
+            </label>
+
+            <button type="submit" class="btn">Start Compression</button>
+
+        </form>
+    </div>
+</div>
+
+<footer>
+    © <%= new Date().getFullYear() %> Osmisum File Compression
+</footer>
+
+</body>
+</html>
