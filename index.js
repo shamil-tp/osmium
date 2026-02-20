@@ -1,6 +1,9 @@
 require('dotenv').config()
 
 const express = require('express');
+const multer = require('multer');
+const upload = multer({dest:'uploads/'})
+const extractor = require('./extractor')
 const app = express()
 
 const port = process.env.PORT || 3000
@@ -10,13 +13,32 @@ app.set("views","views")
 
 app.use(express.urlencoded({extended:true}))
 
+
 app.get('/',(req,res)=>res.render("started"))
 app.get('/compress',(req,res)=>res.render("compress", {
-    originalSize: "4.5 MB",
-    compressedSize: "1.2 MB",
-    sizeDifference: "3.3 MB",
-    compressionPercentage: "73%",
-    downloadUrl: "/downloads/file.zip"
+    originalSize: " ",
+    compressedSize: " ",
+    sizeDifference: " ",
+    compressionPercentage: " ",
+    downloadUrl: null
 }))
+app.post('/compress',upload.single('file'),async (req,res)=>{
+    console.log(req.file)
+    const fileDetails = req.file
+    
+    let result = await extractor(fileDetails,'c')
 
+    console.log(result)
+    return res.redirect('/compress')
+})
+app.get('/decompress',(req,res)=>res.render("decompress",{downloadUrl:""}))
+app.post('/decompress',upload.single('file'),async (req,res)=>{
+    console.log(req.file)
+    const fileDetails = req.file
+    
+    let result = await extractor(fileDetails,'d')
+
+    console.log(result)
+    return res.redirect('/compress')
+})
 app.listen(port)

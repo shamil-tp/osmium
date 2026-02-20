@@ -128,17 +128,17 @@
         <h1>Compress Your Files Instantly</h1>
         <p>Fast. Secure. Efficient file compression powered by Osmisum.</p>
 
-        <form action="/compress" method="POST" enctype="multipart/form-data">
+        <div class="form">
             
-            <label class="upload-box">
+            <!-- <label class="upload-box">
                 <p>Drag & Drop your file here</p>
                 <p style="font-size:13px;color:#94a3b8;">or click to browse</p>
                 <input type="file" name="file" required>
-            </label>
+            </label> -->
 
-            <button type="submit" class="btn">Start Compression</button>
+            <button type="button" class="btn" onclick="window.location.href='/compress'">Start Compression</button>
 
-        </form>
+        <div>
     </div>
 </div>
 
