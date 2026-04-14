@@ -223,8 +223,7 @@ function writeCompressedFile(outputPath, tokens, trees) {
     };
 
     const headerJSON         = JSON.stringify(headerObject);
-    const zlib = require('zlib');
-    const headerBuffer       = zlib.deflateSync(Buffer.from(headerJSON));
+    const headerBuffer       = Buffer.from(headerJSON);
     const headerLengthBuffer = Buffer.alloc(4);
     headerLengthBuffer.writeUInt32BE(headerBuffer.length);
 
@@ -243,8 +242,7 @@ const decompress = (inputPath, outputPath) => {
 
     // Read header
     const headerLength = fileBuffer.readUInt32BE(0);
-    const zlib = require('zlib');
-    const headerJSON   = zlib.inflateSync(fileBuffer.slice(4, 4 + headerLength)).toString();
+    const headerJSON         = fileBuffer.slice(4, 4 + headerLength).toString();
     const header       = JSON.parse(headerJSON);
 
     const { literalCodes, lengthCodes, distanceCodes, padding } = header;
@@ -319,6 +317,8 @@ const decompress = (inputPath, outputPath) => {
 
 
 module.exports = { compress, decompress };
+
+
 
 
 
