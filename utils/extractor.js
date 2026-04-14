@@ -1,4 +1,4 @@
-const fs = require('fs').promises;
+﻿const fs = require('fs').promises;
 const path = require('path');
 const comi = require('./compress')
 const dcomi = require('./decompressor')
@@ -12,7 +12,7 @@ const extractor = async(file, dir, char) => {
     if (char === 'c') {
         outputFilename = fileDetails.originalname + '.bin';
         const outputPath = path.join(dir, 'uploads', outputFilename);
-        result = await comi(inputPath, outputPath);
+        result = await comi.compress(inputPath, outputPath);
         result.downloadFilename = outputFilename;
     } else if (char === 'd') {
         outputFilename = fileDetails.originalname.replace('.bin', '');

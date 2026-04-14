@@ -1,139 +1,89 @@
-const fs = require("fs");
+﻿const fs = require('fs');
 
-function decompress(inputPath, outputPath) {
+const EOF_SYMBOL = 256;
+
+const decompress = (inputPath, outputPath) => {
 
     const fileBuffer = fs.readFileSync(inputPath);
 
-
+    // Read header
     const headerLength = fileBuffer.readUInt32BE(0);
+    const headerJSON   = fileBuffer.slice(4, 4 + headerLength).toString();
+    const header       = JSON.parse(headerJSON);
 
+    const { literalCodes, lengthCodes, distanceCodes, padding } = header;
 
-    const headerStart = 4;
-    const headerEnd = 4 + headerLength;
-
-    const headerJSON = fileBuffer.slice(headerStart, headerEnd).toString();
-    const header = JSON.parse(headerJSON);
-
-    const { literalFreq, lengthFreq, distanceFreq, padding } = header;
-
-
-    function buildTree(freqObj) {
-
-        const entries = Object.entries(freqObj);
-        if (entries.length === 0) return null;
-
-        let nodes = entries.map(([symbol, freq]) => ({
-            symbol: isNaN(symbol) ? symbol : Number(symbol),
-            freq,
-            left: null,
-            right: null
-        }));
-
-        nodes.sort((a, b) => a.symbol - b.symbol);
-        let idCounter = 0;
-        nodes.forEach(n => n.id = idCounter++);
-
-        if (nodes.length === 1) {
-            return {
-                symbol: null,
-                freq: nodes[0].freq,
-                left: nodes[0],
-                right: null
-            };
-        }
-
-        while (nodes.length > 1) {
-
-            nodes.sort((a, b) => {
-                if (a.freq !== b.freq) return a.freq - b.freq;
-                return a.id - b.id;
-            });
-
-            const left = nodes.shift();
-            const right = nodes.shift();
-
-            nodes.push({
-                id: idCounter++,
-                symbol: null,
-                freq: left.freq + right.freq,
-                left,
-                right
-            });
-        }
-
-        return nodes[0];
+    // Build reverse-lookup tables  code -> symbol
+    function invertCodes(codeTable) {
+        const inv = {};
+        for (const [sym, code] of Object.entries(codeTable)) inv[code] = Number(sym);
+        return inv;
     }
 
-    const literalTree = buildTree(literalFreq);
-    const lengthTree = buildTree(lengthFreq);
-    const distanceTree = buildTree(distanceFreq);
+    const invLiteral  = invertCodes(literalCodes);
+    const invLength   = invertCodes(lengthCodes);
+    const invDistance = invertCodes(distanceCodes);
 
+    // Convert data bytes back to a bit string, stripping padding
+    const dataBuffer = fileBuffer.slice(4 + headerLength);
+    let bitString    = '';
+    for (const byte of dataBuffer) bitString += byte.toString(2).padStart(8, '0');
+    bitString = bitString.slice(0, bitString.length - padding);
 
-    const dataBuffer = fileBuffer.slice(headerEnd);
+    // Decode tokens
+    const output = [];
+    let pos = 0;
 
-    let bitString = "";
+    while (pos < bitString.length) {
+        const flag = bitString[pos++];
 
-    for (let byte of dataBuffer) {
-        bitString += byte.toString(2).padStart(8, "0");
-    }
-
-
-    if (padding > 0) {
-        bitString = bitString.slice(0, -padding);
-    }
-
-
-    let i = 0;
-    const outputBytes = [];
-
-    function decodeSymbol(tree) {
-        let node = tree;
-
-        while (node.symbol === null) {
-            if (bitString[i++] === "0") {
-                node = node.left;
-            } else {
-                node = node.right;
+        if (flag === '0') {
+            // Literal or EOF
+            let code = '';
+            while (pos <= bitString.length) {
+                code += bitString[pos++];
+                if (code in invLiteral) {
+                    const sym = invLiteral[code];
+                    if (sym === EOF_SYMBOL) goto_end: { break goto_end; }
+                    output.push(sym);
+                    break;
+                }
             }
-        }
-
-        return node.symbol;
-    }
-
-    while (i < bitString.length) {
-
-        const marker = bitString[i++];
-
-        if (marker === "0") {
-
-            const byte = decodeSymbol(literalTree);
-            outputBytes.push(byte);
+            // Check for EOF symbol
+            if (invLiteral[code] === EOF_SYMBOL) break;
 
         } else {
+            // Back-reference
+            let lCode = '';
+            let length = -1;
+            while (pos <= bitString.length) {
+                lCode += bitString[pos++];
+                if (lCode in invLength) { length = invLength[lCode]; break; }
+            }
 
-            const length = decodeSymbol(lengthTree);
-            const distance = decodeSymbol(distanceTree);
+            let dCode = '';
+            let distance = -1;
+            while (pos <= bitString.length) {
+                dCode += bitString[pos++];
+                if (dCode in invDistance) { distance = invDistance[dCode]; break; }
+            }
 
-            const start = outputBytes.length - distance;
-
-            for (let j = 0; j < length; j++) {
-                outputBytes.push(outputBytes[start + j]);
+            // Copy from already-decoded output
+            const start = output.length - distance;
+            for (let k = 0; k < length; k++) {
+                output.push(output[start + k]);
             }
         }
     }
 
-
-    const outputBuffer = Buffer.from(outputBytes);
-    fs.writeFileSync(outputPath, outputBuffer);
-
+    fs.writeFileSync(outputPath, Buffer.from(output));
     const compressedSize = fs.statSync(inputPath).size;
-    const decompressedSize = outputBuffer.length;
-
-    console.log("Decompression successful ✅");
+    console.log('Decompression successful.');
+    
     return {
         compressedSize,
-        decompressedSize
+        decompressedSize: output.length
     };
-}
+};
 
 module.exports = decompress;
